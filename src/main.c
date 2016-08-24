@@ -24,6 +24,8 @@
 #include <linux/input.h>
 #include <ecl/ecl.h>
 
+#include "openmt.h"
+
 int main(int argc, char** argv){
     cl_boot(argc, argv);
 

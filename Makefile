@@ -1,7 +1,7 @@
 MAIN = src/main.c \
 	   src/openmt.a
 
-openmt: src/main.c src/openmt.a
+openmt: src/main.c src/openmt.h src/openmt.a
 	$(CC) `ecl-config --cflags` -o $@ $(MAIN) \
 	      `ecl-config --ldflags` -lecl
 
