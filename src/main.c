@@ -20,30 +20,51 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <linux/input.h>
 #include <ecl/ecl.h>
-
-#define EVDEV "/dev/input/event16"
 
 int main(int argc, char** argv){
     cl_boot(argc, argv);
 
     extern void init_lib_OPENMT(cl_object);
     ecl_init_module(NULL, init_lib_OPENMT);
-    cl_eval(c_string_to_object("(test)"));
 
-    cl_shutdown();
+    //Check Config File
+    cl_object devname = cl_eval(c_string_to_object("(look-for-config-file)"));
+    if(ecl_t_of(devname) != t_string){
+        fprintf(stderr, "Invalid Config File, Please Check ~/openmt.conf\n");
+        cl_shutdown();
+        return EXIT_FAILURE;
+    }
+    char evname[devname->string.fillp];
+    for(int i = 0; i < devname->string.fillp; i++){
+        evname[i] = devname->string.self[i];
+    }
+
 
     struct input_event ev;
     int fd;
     char name[256] = "Unknown";
+    int evcount = 0;
+    int errcount = 0;
+    char evdev[256];
+    do{
+        sprintf(evdev, "/dev/input/event%d", evcount++);
+        printf("Trying %s\n", evdev);
+        fd = open(evdev, O_RDONLY);
+        ioctl(fd, EVIOCGNAME(sizeof(name)), name);
+        if(strcmp(name, evname) == 0){
+            break;
+        }
+        if(fd == -1){
+            if(errcount++ >= 1){
+                printf("Failed to open device\n");
+                return EXIT_FAILURE;
+            }
+        }
+    }while(1);
 
-    fd = open(EVDEV, O_RDONLY);
-    if(fd == -1){
-        printf("Failed to open device\n");
-        return EXIT_FAILURE;
-    }
-    ioctl(fd, EVIOCGNAME(sizeof(name)), name);
     printf("Reading from: %s\n", name);
 
     for(;;){
@@ -51,11 +72,13 @@ int main(int argc, char** argv){
         ssize_t size;
 
         size = read(fd, &ev, es);
+
         if(size < es){
             printf("Size err\n");
             close(fd);
             return EXIT_FAILURE;
         }
+
         if(ev.type == EV_ABS){
             switch(ev.code){
                 case ABS_MT_SLOT:
@@ -69,5 +92,6 @@ int main(int argc, char** argv){
         }
     }
 
+    cl_shutdown();
     return EXIT_SUCCESS;
 }
