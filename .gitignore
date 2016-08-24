@@ -1,3 +1,23 @@
+
+# Created by https://www.gitignore.io/api/vim,c,commonlisp
+
+### Vim ###
+# swap
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+# session
+Session.vim
+# temporary
+.netrwhist
+*~
+# auto-generated tag files
+tags
+
+
+### C ###
+# Prerequisites
+*.d
+
 # Object files
 *.o
 *.ko
@@ -31,3 +51,9 @@
 # Debug files
 *.dSYM/
 *.su
+
+
+### CommonLisp ###
+*.FASL
+*.fasl
+*.lisp-temp
